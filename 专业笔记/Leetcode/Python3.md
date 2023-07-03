@@ -289,6 +289,8 @@ def lengthOfLastWord(self, s: str) -> int:
 def addBinary(self, a: str, b: str) -> str:
     return bin(int(a,2)+int(b,2))[2:]
 
+int(a,2)第一个参数表示正常传入的字符串，第二个参数表示输出的进制数
+
 非内置
   r, p = '', 0
         d = len(b) - len(a)
