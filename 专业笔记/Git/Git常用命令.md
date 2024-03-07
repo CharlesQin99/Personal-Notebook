@@ -16,6 +16,41 @@
 
  `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` 
 
+## 遇到的问题
+
+问题：sp服务器上报错：ssh: Could not resolve hostname github.com: Temporary failure in name resolution
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+解决方案：
+
+![](pic\33.png)
+
+问题：git pull的时候遇到冲突
+
+解决方法：
+
+![](pic\34.png)
+
+```bash
+ 暂存到堆栈区
+git stash
+
+# 查看stash内容
+git stash list
+12345
+```
+
+要用到本地修改时，把`stash`内容应用到本地分支上：
+
+```bash
+git stash pop
+```
+
+
+
 ## 工作区域
 
 - **工作区**：自己电脑上的实际操作的目录
